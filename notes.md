@@ -12,6 +12,8 @@
 
 ## Previous work
 
+http://www.openra.net/news/2017-01-stats-post/
+
 Stats are only available when users submit information, which is what we have.
 
 * OS split (windows/mac/linux)
