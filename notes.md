@@ -106,5 +106,6 @@ System info
 * swearing in game names
 * breakdown of the versions used
 * analysis of people using bots
+* effective screen size (windowsize * windowscale)
 
 vim: ft=markdown:tw=0:wrap
