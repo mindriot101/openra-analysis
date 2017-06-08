@@ -152,8 +152,35 @@ class GLParser(object):
         if match:
             return match.group(0)
 
+Runtime = namedtuple('Runtime', ['provider', 'version'])
 
 def parse_gl_versions(gl_version_strings):
     parser = GLParser()
     for i, entry in enumerate(gl_version_strings):
         yield parser.parse(entry)
+
+
+def parse_runtime(runtime):
+    if runtime is None:
+        return None
+
+    if 'Mono' in runtime:
+        return parse_mono_runtime(runtime)
+    elif '.NET' in runtime:
+        return parse_dotnet_runtime(runtime)
+    else:
+        raise ValueError('Invalid runtime value: {}'.format(runtime))
+
+
+def parse_mono_runtime(value):
+    version = value.split()[1]
+    return Runtime(
+        provider='mono',
+        version=version)
+
+
+def parse_dotnet_runtime(value):
+    version = value.split()[2]
+    return Runtime(
+        provider='.net',
+        version=version)
