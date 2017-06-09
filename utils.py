@@ -3,6 +3,7 @@ import os
 import json
 import tempfile
 import re
+import pandas as pd
 from collections import namedtuple
 
 CACHE_NAME = os.path.join(tempfile.gettempdir(), 'openra_map_hash_names.json')
@@ -184,3 +185,40 @@ def parse_dotnet_runtime(value):
     return Runtime(
         provider='.net',
         version=version)
+
+
+def timely_map_breakdown(df, sample_time):
+    sample_time = sample_time.lower()
+    resample_remapping = {
+        'weekly': 'W',
+        'daily': 'D',
+        'hourly': 'H',
+        'monthly': 'M',
+    }
+
+    if sample_time not in resample_remapping:
+        raise KeyError('Resample value must be one of `{}`'.format(
+            tuple(resample_remapping.keys())))
+
+    pandas_resample = resample_remapping[sample_time]
+    counts = df.groupby('map_name').resample(pandas_resample).map.count()
+    max_values = {}
+
+    for idx, played_count in counts.iteritems():
+        map_name, timestamp = idx
+        if timestamp in max_values:
+            existing_count, existing_name = max_values[timestamp]
+            if played_count > existing_count:
+                max_values[timestamp] = (played_count, map_name)
+        else:
+            max_values[timestamp] = (played_count, map_name)
+
+    times = sorted(list(max_values.keys()))
+
+    max_map = pd.Series(
+        data=[max_values[t][1] for t in times],
+        index=times)
+    categories = pd.Categorical(max_map)
+    return pd.DataFrame(
+        data={'map': categories, 'map_index': categories.codes},
+        index=times)
